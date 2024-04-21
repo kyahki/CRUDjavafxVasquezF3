@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.example.loginscreen.HelloController"
-            prefHeight="400.0" prefWidth="600.0">
+<AnchorPane fx:id="pnGoUpdate" prefHeight="544.0" prefWidth="608.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.loginscreen.HelloController">
+    <children>
 
+        <!-- Go Back button -->
+        <Button layoutX="274.0" layoutY="455.0" mnemonicParsing="false" onAction="#onGoBack2" text="Go Back" />
+    </children>
 </AnchorPane>

@@ -24,7 +24,7 @@ import java.util.List;
 public class HelloController {
 
     public static User user;
-    public Pane pnLogout,pnGoBack,pnRead;
+    public Pane pnLogout,pnGoBack,pnGoUpdate;
     public VBox pnLogin, pnRegister,pnUpdate;
 
     public ColorPicker cpPicker;
@@ -272,6 +272,14 @@ private void onReadAccount() throws IOException {
     private void onGoBack(ActionEvent actionEvent) throws IOException{
         AnchorPane p = (AnchorPane) pnGoBack.getParent();
         Parent scene = FXMLLoader.load(getClass().getResource("hello-view.fxml"));
+        p.getChildren().clear();
+        p.getChildren().add(scene);
+
+    }
+    @FXML
+    private void onGoBack2(ActionEvent actionEvent) throws IOException{
+        AnchorPane p = (AnchorPane) pnGoUpdate.getParent();
+        Parent scene = FXMLLoader.load(getClass().getResource("updateAccount.fxml"));
         p.getChildren().clear();
         p.getChildren().add(scene);
 
