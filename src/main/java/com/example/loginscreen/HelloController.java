@@ -24,24 +24,28 @@ import java.util.List;
 public class HelloController {
 
     public static User user;
-    public Pane pnLogout,pnGoBack,pnGoUpdate;
-    public VBox pnLogin, pnRegister,pnUpdate;
+    public Pane pnLogout,pnGoBack,pnGoUpdate,pnUpdateDog;
+    public VBox pnLogin, pnRegister,pnUpdate,pnDog;
 
     public ColorPicker cpPicker;
 
+
     @FXML
-    private  TableView<User> userTableView;
-
-
+    private TableView<Dog> dogTableView;
 
     @FXML
     private TextField txtUser;
     @FXML
     private PasswordField txtPass;
     @FXML
-    private TextField txtRegisterUser,txtNewUsername;
+    private TextField txtRegisterUser,txtNewUsername,txtNewDogName,txtNewDogAge,txtDogID;
     @FXML
     private PasswordField txtRegisterPass,txtNewPassword;
+
+    public Label lblUpdate,lblUpdateDog;
+
+    @FXML
+    private TextField txtDogName,txtDogBreed,txtDogAge,txtDogGender,txtRemoveDogName;
 
 
     @FXML
@@ -214,7 +218,7 @@ private void onReadAccount() throws IOException {
         UpdateData updateData = new UpdateData();
         try {
             updateData.updateUsername(currentUserId, newUsername);
-            System.out.println("New username set successfully!");
+            lblUpdate.setText("New username set successfully!");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -229,10 +233,11 @@ private void onReadAccount() throws IOException {
             UpdateData updateData = new UpdateData();
             try {
                 updateData.updatePassword(currentUserId, newPassword);
-                System.out.println("New password set successfully!");
+                lblUpdate.setText("New password set successfully!");
             } catch (SQLException e) {
                 e.printStackTrace();
             }
+
         }
 
 
@@ -269,6 +274,13 @@ private void onReadAccount() throws IOException {
             //            p.getChildren().clear();
             //            p.getChildren().add(scene);
     @FXML
+    private void onLogout() throws IOException {
+        AnchorPane p = (AnchorPane) pnUpdate.getParent();
+        Parent scene = FXMLLoader.load(getClass().getResource("hello-view.fxml"));
+        p.getChildren().clear();
+        p.getChildren().add(scene);
+    }
+    @FXML
     private void onGoBack(ActionEvent actionEvent) throws IOException{
         AnchorPane p = (AnchorPane) pnGoBack.getParent();
         Parent scene = FXMLLoader.load(getClass().getResource("hello-view.fxml"));
@@ -285,47 +297,74 @@ private void onReadAccount() throws IOException {
 
     }
     @FXML
-    private  void onLogout(ActionEvent actionEvent) throws IOException{
-        Color color = cpPicker.getValue();
-
-       String realColor = "rgb(" +
-               (int)(color.getRed() * 255) + ", " +
-               (int)(color.getGreen() * 255) + ", " +
-        (int)(color.getBlue() * 255) + ")";
-
-        AnchorPane p = (AnchorPane) pnLogout.getParent();
-        try{
-            BufferedWriter bw = new BufferedWriter(new FileWriter(getClass().getResource("user1.css").getPath(),true));
-            bw.write(".button { -fx-background-color: " + realColor + " }");
-            bw.newLine();
-            bw.close();
-        }catch(IOException e){
-
-        }
-        Parent scene = FXMLLoader.load(getClass().getResource("hello-view.fxml"));
+    private void onGoBack3(ActionEvent actionEvent) throws IOException{
+        AnchorPane p = (AnchorPane) pnDog.getParent();
+        Parent scene = FXMLLoader.load(getClass().getResource("updateAccount.fxml"));
         p.getChildren().clear();
         p.getChildren().add(scene);
+
     }
+    @FXML
+    private void onGoBack4(ActionEvent actionEvent) throws IOException{
+        AnchorPane p = (AnchorPane) pnUpdateDog.getParent();
+        Parent scene = FXMLLoader.load(getClass().getResource("showDogs.fxml"));
+        p.getChildren().clear();
+        p.getChildren().add(scene);
+
+    }
+//    @FXML
+//    private  void onLogout(ActionEvent actionEvent) throws IOException{
+//        Color color = cpPicker.getValue();
+//
+//       String realColor = "rgb(" +
+//               (int)(color.getRed() * 255) + ", " +
+//               (int)(color.getGreen() * 255) + ", " +
+//        (int)(color.getBlue() * 255) + ")";
+//
+//        AnchorPane p = (AnchorPane) pnLogout.getParent();
+//        try{
+//            BufferedWriter bw = new BufferedWriter(new FileWriter(getClass().getResource("user1.css").getPath(),true));
+//            bw.write(".button { -fx-background-color: " + realColor + " }");
+//            bw.newLine();
+//            bw.close();
+//        }catch(IOException e){
+//
+//        }
+//        Parent scene = FXMLLoader.load(getClass().getResource("hello-view.fxml"));
+//        p.getChildren().clear();
+//        p.getChildren().add(scene);
+//    }
 
     @FXML
     private void onCreateAccount() throws IOException {
         String username = txtRegisterUser.getText();
         String password = txtRegisterPass.getText();
         AnchorPane p;
-        try(Connection c = MySqlConnection.getConnection();
-            PreparedStatement statement = c.prepareStatement(
-                    "INSERT into users (name, password) VALUES (?,?)")){
 
-            statement.setString(1,username);
-            statement.setString(2, password);
-            int rows = statement.executeUpdate();
+        try (Connection c = MySqlConnection.getConnection()) {
+            c.setAutoCommit(false);
 
-            if(rows > 0){
-                System.out.println("Rows inserted: " + rows);
+            try (PreparedStatement statement = c.prepareStatement(
+                    "INSERT into users (name, password) VALUES (?,?)")) {
+                statement.setString(1, username);
+                statement.setString(2, password);
+                int rows = statement.executeUpdate();
+
+                if (rows > 0) {
+                    System.out.println("Rows inserted: " + rows);
+                }
+
+                c.commit();
+            } catch (SQLException e) {
+                c.rollback();
+                throw new RuntimeException("Transaction failed.", e);
+            } finally {
+                c.setAutoCommit(true);
             }
-        }catch (SQLException e){
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new RuntimeException("Database connection error.", e);
         }
+
         p = (AnchorPane) pnRegister.getParent();
         Parent scene = FXMLLoader.load(getClass().getResource("hello-view.fxml"));
         p.getChildren().clear();
@@ -358,5 +397,147 @@ private void onReadAccount() throws IOException {
         p.getChildren().clear();
         p.getChildren().add(scene);
     }
+//    @FXML
+//    public void onCreateDog() throws IOException {
+//        AnchorPane p = (AnchorPane) pnUpdate.getParent();
+//        CreateTable.createDogTable();
+//        Parent scene = FXMLLoader.load(getClass().getResource("showDogs.fxml"));
+//        p.getChildren().clear();
+//        p.getChildren().add(scene);
+//    }
+
+    @FXML
+    public void onAddDog() throws IOException {
+        String dogName = txtDogName.getText();
+        String dogBreed = txtDogBreed.getText();
+        int dogAge = Integer.parseInt(txtDogAge.getText());
+        String dogGender = txtDogGender.getText();
+
+        int userId = user.getId();
+
+        try (Connection connection = MySqlConnection.getConnection()) {
+            connection.setAutoCommit(false);
+
+            try (PreparedStatement statement = connection.prepareStatement(
+                    "INSERT INTO dogprofile (id, dogname, dogbreed, dogage, gender) VALUES (?, ?, ?, ?, ?)")) {
+
+                statement.setInt(1, userId);
+                statement.setString(2, dogName);
+                statement.setString(3, dogBreed);
+                statement.setInt(4, dogAge);
+                statement.setString(5, dogGender);
+                int rows = statement.executeUpdate();
+
+                if (rows > 0) {
+                    System.out.println("Rows inserted: " + rows);
+                    lblUpdateDog.setText("Dog succesfully Added!");
+                }
+
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+                throw new RuntimeException("Transaction failed.", e);
+            } finally {
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Database connection error.", e);
+        }
+    }
+
+    @FXML
+    private void onCreateDog() throws IOException {
+        AnchorPane p = (AnchorPane) pnUpdate.getParent();
+        CreateTable.createDogTable();
+        Parent scene = FXMLLoader.load(getClass().getResource("showDogs.fxml"));
+        p.getChildren().clear();
+        p.getChildren().add(scene);
+    }
+
+    @FXML
+    private void onShowDogs() {
+        List<Dog> dogs = new ArrayList<>();
+
+        try (Connection connection = MySqlConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                     "SELECT * FROM dogprofile WHERE id = ?")) {
+            statement.setInt(1, user.getId());
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                int dogId = resultSet.getInt("dogid");
+                String dogName = resultSet.getString("dogname");
+                String dogBreed = resultSet.getString("dogbreed");
+                int dogAge = resultSet.getInt("dogage");
+                String dogGender = resultSet.getString("gender");
+
+                Dog dog = new Dog(dogId,user.getId() ,dogName, dogBreed, dogAge, dogGender);
+                dogs.add(dog);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+
+        ObservableList<Dog> dogList = FXCollections.observableArrayList(dogs);
+        lblUpdateDog.setText("Showing current Dogs!");
+        dogTableView.setItems(dogList);
+    }
+    @FXML
+    private void onRemoveDog() {
+        String dogToRemove = txtRemoveDogName.getText();
+
+        try (Connection c = MySqlConnection.getConnection();
+             PreparedStatement statement = c.prepareStatement(
+                     "DELETE FROM dogprofile WHERE dogname = ? AND id = ? RETURNING *")) {
+            statement.setString(1, dogToRemove);
+            statement.setInt(2, user.getId());
+
+            int rows = statement.executeUpdate();
+
+            if (rows > 0) {
+                lblUpdateDog.setText("Dog successfully deleted!");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    @FXML
+    private void onUpdateDog() throws IOException {
+        AnchorPane p = (AnchorPane) pnDog.getParent();
+        CreateTable.createDogTable();
+        Parent scene = FXMLLoader.load(getClass().getResource("updateDogs.fxml"));
+        p.getChildren().clear();
+        p.getChildren().add(scene);
+    }
+    @FXML
+    private void onUpdateDogName() {
+        int dogIdToUpdate = Integer.parseInt(txtDogID.getText());
+        String newDogName = txtNewDogName.getText();
+        UpdateData updateData = new UpdateData();
+        try {
+            updateData.updateDogName(dogIdToUpdate, newDogName);
+            lblUpdate.setText("New dog name set successfully!");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void onUpdateDogAge() {
+        int dogIdToUpdate = Integer.parseInt(txtDogID.getText());
+        int newDogAge = Integer.parseInt(txtNewDogAge.getText());
+        UpdateData updateData = new UpdateData();
+        try {
+            updateData.updateDogAge(dogIdToUpdate, newDogAge);
+            lblUpdate.setText("New dog age set successfully!");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
 
 }
